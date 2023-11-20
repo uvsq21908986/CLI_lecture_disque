@@ -11,13 +11,30 @@ impl Size {
 
 impl fmt::Display for Size {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
+        const KIB: f64 = 1024.0;
+        const MIB: f64 = KIB * 1024.0;
+        const GIB: f64 = MIB * 1024.0;
+        const TIB: f64 = GIB * 1024.0;
+
+        let bytes = self.0 as f64;
+
+        if bytes < KIB {
+            write!(f, "{} B", bytes)
+        } else if bytes < MIB {
+            write!(f, "{:.1} KiB", bytes / KIB)
+        } else if bytes < GIB {
+            write!(f, "{:.1} MiB", bytes / MIB)
+        } else if bytes < TIB {
+            write!(f, "{:.1} GiB", bytes / GIB)
+        } else {
+            write!(f, "{:.1} TiB", bytes / TIB)
+        }
     }
 }
 
 impl std::ops::Add for Size {
     type Output = Self;
     fn add(self, other: Self) -> Self::Output {
-        unimplemented!()
+        Size(self.0 + other.0)
     }
 }
