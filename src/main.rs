@@ -12,6 +12,14 @@ use std::path::{Path, PathBuf};
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+
+    /// Sort the tree lexicographically by path
+    #[arg(short, long)]
+    lexicographic_sort: bool,
+
+    /// Filter nodes by extension
+    #[arg(short, long)]
+    filter: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -29,7 +37,9 @@ fn main() -> std::io::Result<()> {
     match &cli.command {
         Commands::Usage { path } => {
             let path = path.as_deref().unwrap_or(Path::new("."));
-            FileTree::new(path)?.show();
+            FileTree::new(path)
+                .unwrap()
+                .show(cli.lexicographic_sort, cli.filter.as_deref());
         }
     }
     Ok(())
