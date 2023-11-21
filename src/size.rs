@@ -19,15 +19,15 @@ impl fmt::Display for Size {
         let bytes = self.0 as f64;
 
         if bytes < KIB {
-            write!(f, "{} B", bytes)
+            write!(f, "{:<5} B", bytes)
         } else if bytes < MIB {
-            write!(f, "{:.1} KiB", bytes / KIB)
+            write!(f, "{:<5.1} KiB", bytes / KIB)
         } else if bytes < GIB {
-            write!(f, "{:.1} MiB", bytes / MIB)
+            write!(f, "{:<5.1} MiB", bytes / MIB)
         } else if bytes < TIB {
-            write!(f, "{:.1} GiB", bytes / GIB)
+            write!(f, "{:<5.1} GiB", bytes / GIB)
         } else {
-            write!(f, "{:.1} TiB", bytes / TIB)
+            write!(f, "{:<5.1} TiB", bytes / TIB)
         }
     }
 }
