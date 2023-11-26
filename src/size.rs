@@ -38,3 +38,39 @@ impl std::ops::Add for Size {
         Size(self.0 + other.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_size_creation() {
+        let size = Size::new(1024);
+        assert_eq!(size.0, 1024);
+    }
+
+    #[test]
+    fn test_size_addition() {
+        let size1 = Size::new(1024);
+        let size2 = Size::new(2048);
+        let result = size1 + size2;
+        assert_eq!(result.0, 3072);
+    }
+
+    #[test]
+    fn test_size_display() {
+        let size = Size::new(1023);
+        assert_eq!(format!("{}", size), "1023  B");
+
+        let size = Size::new(2048);
+        assert_eq!(format!("{}", size), "2.0 KiB");
+
+        let size = Size::new(5 * 1024 * 1024);
+        assert_eq!(format!("{}", size), "5.0 MiB");
+
+        let size = Size::new(2 * 1024 * 1024 * 1024);
+        assert_eq!(format!("{}", size), "2.0 GiB");
+
+        let size = Size::new(3 * 1024 * 1024 * 1024 * 1024);
+        assert_eq!(format!("{}", size), "3.0 TiB");
+    }
+}
