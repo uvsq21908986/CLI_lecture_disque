@@ -1,3 +1,4 @@
+use crate::doublons;
 use crate::file_tree::FileTree;
 use crate::size::Size;
 use std::path::{Path, PathBuf};
@@ -18,6 +19,42 @@ fn print_node(node_path: &Path, depth: usize, size: Option<&Size>) {
     println!(" {}", node_name.to_string_lossy());
 }
 
+fn display_duplacate_files(file_tree: &FileTree, filter_extension: Option<&str>) {
+    match doublons::find_duplicate_files(file_tree) {
+        Ok(contents) => {
+            for content in contents {
+                let mut cmp: u32 = 0;
+                for file in content {
+                    if let Some(extension) = filter_extension {
+                        let path_try: PathBuf = PathBuf::from(&file);
+                        // println!("path_try {:?}, extension {:?}", &path_try, extension);
+                        if filter_child(&path_try, extension) {
+                            println!("{:?}", file);
+                            cmp += 1;
+                        }
+                    }
+                }
+                if cmp != 0 {
+                    print!("\n")
+                }
+            }
+        }
+        Err(err) => eprintln!("Erreur de lecture du fichier : {}", err),
+    }
+}
+
+// Définir la fonction de filtrage
+fn filter_child(child: &PathBuf, extension: &str) -> bool {
+    if let Some(file_name) = child.file_name() {
+        if let Some(child_extension) = file_name.to_str().and_then(|s| Path::new(s).extension()) {
+            if let Some(child_extension) = child_extension.to_str() {
+                return ".".to_string() + child_extension == extension;
+            }
+        }
+    }
+    false
+}
+
 // Fonction pour filtrer les enfants par extension
 fn filter_children(
     file_tree: &FileTree,
@@ -28,20 +65,7 @@ fn filter_children(
     if let Some(extension) = filter_extension {
         let mut vec_children: Vec<PathBuf> = children
             .into_iter()
-            .filter(|child| {
-                if let Some(file_name) = child.file_name() {
-                    if let Some(child_extension) =
-                        file_name.to_str().and_then(|s| Path::new(s).extension())
-                    {
-                        // println!("{:?}", child_extension.to_str());
-                        // println!("{:?}", Some(extension));
-                        if let Some(child_extension) = child_extension.to_str() {
-                            return ".".to_string() + child_extension == extension;
-                        }
-                    }
-                }
-                false
-            })
+            .filter(|child| filter_child(child, &extension))
             .collect();
         sort_children(&mut vec_children, file_tree, lexicographic_sort);
         for child in vec_children {
@@ -89,13 +113,22 @@ fn display_node_recursive(
 }
 
 impl FileTree {
-    pub fn show(&self, lexicographic_sort: bool, filter_extension: Option<&str>) {
-        if let Some(_) = filter_extension {
-            let children = self.files();
-            filter_children(self, children, filter_extension, lexicographic_sort);
+    pub fn show(
+        &self,
+        lexicographic_sort: bool,
+        filter_extension: Option<&str>,
+        is_duplicate: bool,
+    ) {
+        if is_duplicate {
+            display_duplacate_files(self, filter_extension);
         } else {
-            // Affichage du contenu de l'arbre, en commençant par la racine
-            display_node_recursive(self, self.get_root(), 0, lexicographic_sort);
+            if let Some(_) = filter_extension {
+                let children = self.files();
+                filter_children(self, children, filter_extension, lexicographic_sort);
+            } else {
+                // Affichage du contenu de l'arbre, en commençant par la racine
+                display_node_recursive(self, self.get_root(), 0, lexicographic_sort);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ mod print_tree;
 mod size;
 
 use clap::{Parser, Subcommand};
+mod doublons;
 use file_tree::FileTree;
 use std::path::{Path, PathBuf};
 
@@ -20,6 +21,10 @@ struct Cli {
     /// Filter nodes by extension
     #[arg(short, long)]
     filter: Option<String>,
+
+    /// Filter nodes by extension
+    #[arg(short, long)]
+    duplicates: bool,
 }
 
 #[derive(Subcommand)]
@@ -37,9 +42,11 @@ fn main() -> std::io::Result<()> {
     match &cli.command {
         Commands::Usage { path } => {
             let path = path.as_deref().unwrap_or(Path::new("."));
-            FileTree::new(path)
-                .unwrap()
-                .show(cli.lexicographic_sort, cli.filter.as_deref());
+            FileTree::new(path).unwrap().show(
+                cli.lexicographic_sort,
+                cli.filter.as_deref(),
+                cli.duplicates,
+            );
         }
     }
     Ok(())
