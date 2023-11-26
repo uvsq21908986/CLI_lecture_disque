@@ -22,7 +22,7 @@ struct Cli {
     #[arg(short, long)]
     filter: Option<String>,
 
-    /// Filter nodes by extension
+    /// Filter duplicates files
     #[arg(short, long)]
     duplicates: bool,
 }

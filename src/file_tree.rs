@@ -99,3 +99,67 @@ impl FileTree {
             .collect()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use std::io::Write;
+    use std::path::PathBuf;
+
+    fn create_test_directory_structure() -> PathBuf {
+        let root = tempfile::tempdir().expect("Error creating temp directory");
+
+        // Create some files and subdirectories
+        let file1_path = root.path().join("file1.txt");
+        let file2_path = root.path().join("subdir1").join("file2.txt");
+        let file3_path = root.path().join("subdir2").join("file3.txt");
+
+        fs::create_dir_all(file2_path.parent().expect("Error getting parent directory"))
+            .expect("Error creating parent directories");
+
+        fs::create_dir_all(file3_path.parent().expect("Error getting parent directory"))
+            .expect("Error creating parent directories");
+
+        let mut file1 = File::create(&file1_path).expect("Error creating file1");
+        file1
+            .write_all(b"Hello, World!")
+            .expect("Error writing to file1");
+
+        let mut file2 = File::create(&file2_path).expect("Error creating file2");
+        file2
+            .write_all(b"Testing 123")
+            .expect("Error writing to file2");
+
+        let mut file3 = File::create(&file3_path).expect("Error creating file3");
+        file3
+            .write_all(b"Rust is awesome")
+            .expect("Error writing to file3");
+
+        root.into_path()
+    }
+
+    #[test]
+    fn test_file_tree_creation() {
+        let root_path = create_test_directory_structure();
+        let file_tree = FileTree::new(&root_path).expect("Error creating file tree");
+
+        // Add assertions to test the structure of the created file tree
+        assert_eq!(file_tree.get_root(), &root_path);
+
+        // Clean up: Remove the temporary directory
+        fs::remove_dir_all(&root_path).expect("Error removing temp directory");
+    }
+
+    #[test]
+    fn test_file_tree_methods() {
+        let root_path = create_test_directory_structure();
+        let file_tree = FileTree::new(&root_path).expect("Error creating file tree");
+
+        // Add assertions to test various methods of the FileTree
+        assert_eq!(file_tree.files().len(), 3);
+
+        // Clean up: Remove the temporary directory
+        fs::remove_dir_all(&root_path).expect("Error removing temp directory");
+    }
+}

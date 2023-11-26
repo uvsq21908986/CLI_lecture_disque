@@ -61,3 +61,63 @@ pub fn calculate_md5(content: &Vec<u8>) -> io::Result<String> {
     let result = hasher.finalize();
     Ok(format!("{:?}", result))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use std::io::Write;
+
+    #[test]
+    fn test_find_duplicate_files() {
+        let temp_dir = tempfile::tempdir().expect("Error creating temp directory");
+
+        // Create two identical files
+        let file1_path = temp_dir.path().join("file1.txt");
+        let file2_path = temp_dir.path().join("file2.txt");
+
+        let content = b"Hello, World!";
+        create_file_with_content(&file1_path, content);
+        create_file_with_content(&file2_path, content);
+
+        let file_tree = FileTree::new(&temp_dir.path()).expect("Error creating file tree");
+
+        let duplicate_files =
+            find_duplicate_files(&file_tree).expect("Error finding duplicate files");
+
+        // Print information about the actual and expected results
+        println!("Actual duplicate files: {:?}", duplicate_files);
+
+        // Expectation: Both file1.txt and file2.txt should be in the list of duplicate files
+        assert!(
+            duplicate_files
+                .iter()
+                .any(|files| files.contains(&file1_path.display().to_string())
+                    && files.contains(&file2_path.display().to_string())),
+            "Expected duplicate files not found"
+        );
+
+        // Clean up: Remove the temporary directory
+        fs::remove_dir_all(&temp_dir).expect("Error removing temp directory");
+    }
+
+    #[test]
+    fn test_calculate_md5() {
+        // Create some content
+        let content = b"Hello, World!";
+
+        // Calculate the MD5 hash
+        let md5_hash = calculate_md5(&content.to_vec()).expect("Error calculating MD5 hash");
+
+        // Expectation: The MD5 hash should be a string
+        assert!(!md5_hash.is_empty(), "MD5 hash is empty");
+
+        // Clean up: No cleanup needed for this test
+    }
+
+    // Helper function to create a file with specified content
+    fn create_file_with_content(file_path: &std::path::Path, content: &[u8]) {
+        let mut file = File::create(file_path).expect("Error creating test file");
+        file.write_all(content).expect("Error writing to test file");
+    }
+}
