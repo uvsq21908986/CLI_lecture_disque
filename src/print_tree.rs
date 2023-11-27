@@ -32,6 +32,9 @@ fn display_duplacate_files(file_tree: &FileTree, filter_extension: Option<&str>)
                             println!("{:?}", file);
                             cmp += 1;
                         }
+                    } else {
+                        println!("{:?}", file);
+                        cmp += 1;
                     }
                 }
                 if cmp != 0 {
