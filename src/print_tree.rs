@@ -38,7 +38,7 @@ fn display_duplacate_files(file_tree: &FileTree, filter_extension: Option<&str>)
                     }
                 }
                 if cmp != 0 {
-                    print!("\n")
+                    println!();
                 }
             }
         }
@@ -47,7 +47,7 @@ fn display_duplacate_files(file_tree: &FileTree, filter_extension: Option<&str>)
 }
 
 // Définir la fonction de filtrage
-fn filter_child(child: &PathBuf, extension: &str) -> bool {
+fn filter_child(child: &Path, extension: &str) -> bool {
     if let Some(file_name) = child.file_name() {
         if let Some(child_extension) = file_name.to_str().and_then(|s| Path::new(s).extension()) {
             if let Some(child_extension) = child_extension.to_str() {
@@ -68,7 +68,7 @@ fn filter_children(
     if let Some(extension) = filter_extension {
         let mut vec_children: Vec<PathBuf> = children
             .into_iter()
-            .filter(|child| filter_child(child, &extension))
+            .filter(|child| filter_child(child, extension))
             .collect();
         sort_children(&mut vec_children, file_tree, lexicographic_sort);
         for child in vec_children {
@@ -78,7 +78,7 @@ fn filter_children(
 }
 
 // Fonction pour trier les enfants
-fn sort_children(children: &mut Vec<PathBuf>, file_tree: &FileTree, lexicographic_sort: bool) {
+fn sort_children(children: &mut [PathBuf], file_tree: &FileTree, lexicographic_sort: bool) {
     // Trier les enfants selon l'option de tri
     if lexicographic_sort {
         children.sort();
@@ -124,14 +124,12 @@ impl FileTree {
     ) {
         if is_duplicate {
             display_duplacate_files(self, filter_extension);
+        } else if filter_extension.is_some() {
+            let children = self.files();
+            filter_children(self, children, filter_extension, lexicographic_sort);
         } else {
-            if let Some(_) = filter_extension {
-                let children = self.files();
-                filter_children(self, children, filter_extension, lexicographic_sort);
-            } else {
-                // Affichage du contenu de l'arbre, en commençant par la racine
-                display_node_recursive(self, self.get_root(), 0, lexicographic_sort);
-            }
+            // Affichage du contenu de l'arbre, en commençant par la racine
+            display_node_recursive(self, self.get_root(), 0, lexicographic_sort);
         }
     }
 }

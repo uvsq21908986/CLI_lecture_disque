@@ -36,7 +36,7 @@ pub fn find_duplicate_files(file_tree: &FileTree) -> io::Result<Vec<Vec<String>>
             // Print the MD5 hash (for debugging purposes)
 
             // Retrieve the entry associated with the MD5 hash in the file_hashes map
-            let entry_list = file_hashes.entry(md5_hash).or_insert(Vec::new());
+            let entry_list = file_hashes.entry(md5_hash).or_default();
 
             // Push the file name (converted to a String) to the entry_list
             entry_list.push(file.display().to_string());
@@ -56,7 +56,7 @@ pub fn find_duplicate_files(file_tree: &FileTree) -> io::Result<Vec<Vec<String>>
 pub fn calculate_md5(content: &Vec<u8>) -> io::Result<String> {
     let mut hasher = Md5::new();
 
-    hasher.update(&content);
+    hasher.update(content);
 
     let result = hasher.finalize();
     Ok(format!("{:?}", result))
